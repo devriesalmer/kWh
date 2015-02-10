@@ -3,6 +3,6 @@ stty -F /dev/ttyUSB0 115200
 
 cd /home/juerd
 while true; do
- cat /dev/ttyUSB0 | awk '{ print $0 > "/dev/stderr"; if (/^Cycle/) { print "update kWh.rrd N:" $5 } }' | rrdtool update kWh.rrd N:$5:3.15:U:23
+ cat /dev/ttyUSB0 | awk '{ print $0 > "/dev/stderr"; if (/^Cycle/) { print "update kWh.rrd N:" $5 } }' | rrdtool update -
  sleep 1
 done
