@@ -1,4 +1,3 @@
-#include "TM1638.h"
 #include "EEPROM.h"
 #include "AnythingEEPROM.h"
 #include <inttypes.h>
@@ -50,32 +49,7 @@ void save_settings() {
   calc_debounce();
 }
 
-TM1638 display(/*dio*/ 4, /*clk*/ 5, /*stb0*/ 3);
-
-char idletext[9] = "--------";
-
-void display_text (char* text, boolean keep = true) {
-  display.setDisplayToString(text);
-  if (keep) strcpy(idletext, text);
-}
-
-void display_numtext (unsigned short num, char* text, boolean keep = true) {
-  char numstr[9] = "";
-  itoa(num, numstr, 10);
-  char str[9] = "        ";
-  byte width = strlen(text) < 4 && settings.max_watt > 9999 ? 5 : 4;
-  strcpy(&str[width - strlen(numstr)], numstr);
-  strcpy(&str[width], "    ");
-  strcpy(&str[8 - strlen(text)], text);
-  display_text(str, keep);
-}
-
-void restore_display () {
-  display_text(idletext, false);
-}
-
 void setup () {
-  display_text("____    ");
   Serial.begin(57600);
   pinMode(A1, INPUT);
   pinMode(13, OUTPUT);
@@ -100,8 +74,6 @@ unsigned long key_debounce = 0;
   
 void loop () {
 //  delay(10);
-  
-  byte keys = display.getButtons();
 
   unsigned short sum = 0;
   for (byte i = 0; i < 40; i++) {
@@ -114,31 +86,6 @@ void loop () {
   
   unsigned short ratio = (double) sum / (average+1) * 100;
   
-  if (keys) {
-    restore_time = millis() + 2000;
-    if (!key_debounce) {
-      if (keys == (KEY_CYCLES  | KEY_DECR)) --settings.cycles_per_kwh;
-      if (keys == (KEY_CYCLES  | KEY_INCR)) ++settings.cycles_per_kwh;
-      if (keys == (KEY_LOWER   | KEY_DECR)) --settings.lower_threshold;
-      if (keys == (KEY_LOWER   | KEY_INCR)) ++settings.lower_threshold;
-      if (keys == (KEY_UPPER   | KEY_DECR)) --settings.upper_threshold;
-      if (keys == (KEY_UPPER   | KEY_INCR)) ++settings.upper_threshold;
-      if (keys == (KEY_MAXWATT | KEY_DECR)) settings.max_watt -= 100;
-      if (keys == (KEY_MAXWATT | KEY_INCR)) settings.max_watt += 100;
-      if (keys & KEY_INCR || keys & KEY_DECR) {
-        key_debounce = millis() + 200;
-        settingschanged = true;
-      }
-    } else if (millis() >= key_debounce ) {
-      key_debounce = 0;
-    }
-    if (keys & KEY_CYCLES)  display_numtext(settings.cycles_per_kwh, "CYCL", false);
-    if (keys & KEY_LOWER)   display_numtext(settings.lower_threshold, " LO ", false);
-    if (keys & KEY_UPPER)   display_numtext(settings.upper_threshold, " HI ", false);
-    if (keys & KEY_MAXWATT) display_numtext(settings.max_watt, "TOP", false);
-    if (keys & KEY_RAW)   { display.setDisplayToDecNumber(sum, 0); delay(100); }
-    if (keys & KEY_RATIO) { display.setDisplayToDecNumber(ratio, 0); delay(50); }
-  }
   if (restore_time && millis() >= restore_time) {
     restore_time = 0;
     if (settingschanged) {
@@ -146,7 +93,6 @@ void loop () {
       save_settings();
       settingschanged = false;
     }
-    restore_display();
   }
 
   unsigned short lo = settings.lower_threshold;
@@ -166,7 +112,7 @@ void loop () {
   if (numleds > 8) numleds = 8;
   unsigned long ledmask = 0xff >> 8 - numleds;
   if (newledstate) ledmask <<= 8;
-  display.setLEDs(ledmask);
+
    
   if ((!gotenough) || (!newledstate)) {
     readings[cursor++] = sum;
@@ -175,7 +121,6 @@ void loop () {
       if (!gotenough) {
         gotenough = true;
         Serial.println("Done averaging");
-        display_text("====    ");
       }
     }
   }
@@ -206,7 +151,6 @@ void loop () {
  
   if (!cycle++) {
     Serial.println("Discarding incomplete cycle.");
-    display_text("****    ");
     return;
   }
   
@@ -219,6 +163,4 @@ void loop () {
   Serial.print(W, 2);
   Serial.println(" W");
   
-  display_numtext(W, "");
 }
-
