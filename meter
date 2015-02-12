@@ -1,5 +1,5 @@
 #!/bin/sh
-stty -F /dev/ttyUSB0 115200
+stty -F /dev/ttyUSB0 9600
 
 cd /home/juerd
 while true; do
