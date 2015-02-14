@@ -6,14 +6,6 @@
 #define EEPROM_OFFSET  100
 #define MS_PER_HOUR    3.6e6
 
-#define KEY_CYCLES     1 << 0
-#define KEY_LOWER      1 << 1
-#define KEY_UPPER      1 << 2
-#define KEY_MAXWATT    1 << 3
-#define KEY_RAW        1 << 4
-#define KEY_RATIO      1 << 5
-#define KEY_DECR       1 << 6
-#define KEY_INCR       1 << 7
 
 struct SettingsStruct {
   unsigned short cycles_per_kwh;
@@ -33,8 +25,8 @@ void calc_debounce() {
 void read_settings() {
   EEPROM_readAnything(EEPROM_OFFSET, settings);
   if (settings.lower_threshold == 0xff) settings.lower_threshold = 101;
-  if (settings.upper_threshold == 0xff) settings.upper_threshold = 105;
-  if (settings.cycles_per_kwh == 0xffff) settings.cycles_per_kwh = 375;
+  if (settings.upper_threshold == 0xff) settings.upper_threshold = 104;
+  if (settings.cycles_per_kwh == 0xffff) settings.cycles_per_kwh = 600;
   if (settings.max_watt == 0xffff) settings.max_watt = 6000;
   Serial.println("Settings: ");
   Serial.println(settings.cycles_per_kwh, DEC);
@@ -50,7 +42,7 @@ void save_settings() {
 }
 
 void setup () {
-  Serial.begin(57600);
+  Serial.begin(9600);
   pinMode(A1, INPUT);
   pinMode(13, OUTPUT);
   pinMode(2, INPUT);
@@ -83,8 +75,9 @@ void loop () {
   unsigned long bigsum = 0;
   for (unsigned short i = 0; i < READINGS; i++) bigsum += readings[i];
   unsigned short average = bigsum / READINGS;
-  
+
   unsigned short ratio = (double) sum / (average+1) * 100;
+
   
   if (restore_time && millis() >= restore_time) {
     restore_time = 0;
@@ -97,6 +90,7 @@ void loop () {
 
   unsigned short lo = settings.lower_threshold;
   unsigned short hi = settings.upper_threshold;
+
 
   if (hi == 254) {
       lo = 400;
@@ -139,7 +133,7 @@ void loop () {
     Serial.print(hits, DEC);
     Serial.println(" readings)");
     hits = 0;
-    return;
+  return;
   }
   
   unsigned long now = millis();
