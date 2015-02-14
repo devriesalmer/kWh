@@ -131,7 +131,8 @@ void loop () {
     Serial.print(millis() - previous);
     Serial.print(" ms (");
     Serial.print(hits, DEC);
-    Serial.println(" readings)");
+    Serial.print(" readings)");
+    Serial.print("\n");
     hits = 0;
   return;
   }
@@ -155,6 +156,7 @@ void loop () {
   Serial.print(time, DEC);
   Serial.print(" ms, ");
   Serial.print(W, 2);
-  Serial.println(" W");
+  Serial.print(" W");
+  Serial.print("\n");
   
 }
