@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/pi/kWh-master
+cd /home/pi/kWh
 
 ARGS2=(
 	-l 0

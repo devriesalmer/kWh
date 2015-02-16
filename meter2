@@ -1,8 +1,0 @@
-#!/bin/sh
-stty -F /dev/ttyUSB0 115200
-
-cd /home/pi/kWh-master
-while true; do
-awk '{ print $0 > "/dev/stderr"; if (/^Cycle/) { print "update kWh.rrd N:" $5; fflush(); } }' < /dev/ttyUSB0 | rrdtool -
- sleep 1
-done
