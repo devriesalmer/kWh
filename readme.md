@@ -23,7 +23,7 @@ sudo chown root:root /etc/init.d/kwhmeter
 sudo update-rc.d kwhmeter defaults
 ```
 
-Crontab for creating the graphics
+Crontab for creating the graphics and copy files to a remote disk mounted as "myweb"
 ```
 */20 * * * * sudo /home/pi/kWh/update.sh >/dev/null 2>&1
 ```
