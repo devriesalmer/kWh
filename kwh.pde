@@ -24,7 +24,7 @@ void calc_debounce() {
 
 void read_settings() {
   EEPROM_readAnything(EEPROM_OFFSET, settings);
-  if (settings.lower_threshold == 0xff) settings.lower_threshold = 101;
+  if (settings.lower_threshold == 0xff) settings.lower_threshold = 102;
   if (settings.upper_threshold == 0xff) settings.upper_threshold = 104;
   if (settings.cycles_per_kwh == 0xffff) settings.cycles_per_kwh = 600;
   if (settings.max_watt == 0xffff) settings.max_watt = 6000;
