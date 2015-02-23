@@ -6,7 +6,7 @@
 #define EEPROM_OFFSET  100
 #define MS_PER_HOUR    3.6e6
 
-
+int High = 0;
 struct SettingsStruct {
   unsigned short cycles_per_kwh;
   unsigned char  lower_threshold;
@@ -24,8 +24,8 @@ void calc_debounce() {
 
 void read_settings() {
   EEPROM_readAnything(EEPROM_OFFSET, settings);
-  if (settings.lower_threshold == 0xff) settings.lower_threshold = 102;
-  if (settings.upper_threshold == 0xff) settings.upper_threshold = 104;
+  if (settings.lower_threshold == 0xff) settings.lower_threshold = 99;
+  if (settings.upper_threshold == 0xff) settings.upper_threshold = 106;
   if (settings.cycles_per_kwh == 0xffff) settings.cycles_per_kwh = 600;
   if (settings.max_watt == 0xffff) settings.max_watt = 6000;
   Serial.println("Settings: ");
@@ -66,7 +66,8 @@ unsigned long key_debounce = 0;
   
 void loop () {
 //  delay(10);
-
+  
+  
   unsigned short sum = 0;
   for (byte i = 0; i < 40; i++) {
     sum += analogRead(1);
@@ -75,9 +76,10 @@ void loop () {
   unsigned long bigsum = 0;
   for (unsigned short i = 0; i < READINGS; i++) bigsum += readings[i];
   unsigned short average = bigsum / READINGS;
-
+  
   unsigned short ratio = (double) sum / (average+1) * 100;
-
+ // Serial.print(ratio);
+  //Serial.print("\n");
   
   if (restore_time && millis() >= restore_time) {
     restore_time = 0;
@@ -86,11 +88,11 @@ void loop () {
       save_settings();
       settingschanged = false;
     }
+
   }
 
   unsigned short lo = settings.lower_threshold;
   unsigned short hi = settings.upper_threshold;
-
 
   if (hi == 254) {
       lo = 400;
@@ -127,14 +129,14 @@ void loop () {
   digitalWrite(13, ledstate = newledstate);
 
   if (!ledstate) {
-    Serial.print("Marker: ");
+   Serial.print("Marker: ");
     Serial.print(millis() - previous);
     Serial.print(" ms (");
     Serial.print(hits, DEC);
     Serial.print(" readings)");
     Serial.print("\n");
     hits = 0;
-  return;
+    return;
   }
   
   unsigned long now = millis();
@@ -158,5 +160,4 @@ void loop () {
   Serial.print(W, 2);
   Serial.print(" W");
   Serial.print("\n");
-  
 }
